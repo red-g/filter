@@ -2,7 +2,7 @@ module Filter exposing (Filter, all, and, any, array, by, custom, eq, fail, gt, 
 
 {-| Useful ways to combine filters (also known as predicates)!
 
-@docs Array, Filter, all, and, any, array, by, custom, eq, fail, gt, list, lt, not, or, pass, test
+@docs Filter, all, and, any, array, by, custom, eq, fail, gt, list, lt, not, or, pass, test
 
 -}
 
