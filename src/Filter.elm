@@ -1,6 +1,9 @@
 module Filter exposing (Filter, all, and, any, array, by, custom, eq, fail, gt, list, lt, not, or, pass, test)
 
 {-| Useful ways to combine filters (also known as predicates)!
+
+@docs Array, Filter, all, and, any, array, by, custom, eq, fail, gt, list, lt, not, or, pass, test
+
 -}
 
 import Array exposing (Array)
