@@ -6,13 +6,13 @@ type Filter a
 
 
 lt : Int -> Filter Int
-lt left =
-    custom <| (<) left
+lt num =
+    custom <| (>) num
 
 
 gt : Int -> Filter Int
-gt left =
-    custom <| (>) left
+gt num =
+    custom <| (<) num
 
 
 eq : a -> Filter a
