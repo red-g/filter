@@ -6,6 +6,7 @@ Replace your boolean logic with [filters](https://package.elm-lang.org/packages/
    * it is easy and elegant to build complex `Filter`s from smaller ones
 2. Consistency
    * no special boolean syntax--no `if then else` or short-circuiting operators--everything is normal elm code
+
 # context
 Elm is a very small language. Everything sort of "syncs" together in a really nice way.
 But amongst all this cohesion, the `Bool` type always stood out to me.
