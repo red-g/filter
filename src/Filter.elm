@@ -1,85 +1,166 @@
-module Filter exposing (Filter, all, and, any, array, by, custom, eq, fail, gt, list, lt, not, or, pass, test)
+module Filter exposing (Filter, Status(..), all, and, any, array, by, custom, eq, fail, gt, list, lt, not, or, pass, test, gte, lte)
 
 {-| Useful ways to combine filters (also known as predicates)!
 
-@docs Filter, all, and, any, array, by, custom, eq, fail, gt, list, lt, not, or, pass, test
+@docs Filter, Status, all, and, any, array, by, custom, eq, fail, gt, list, lt, not, or, pass, test, gte, lte
 
 -}
 
 import Array exposing (Array)
 
 
+{-| The result of a filter.
+-}
+type Status
+    = Pass
+    | Fail
+
+
 {-| A `Filter` takes a value `a` and determines whether it should pass or fail.
 -}
 type Filter a
-    = Filter (a -> Bool)
+    = Filter (a -> Status)
 
 
 {-| Test whether a value is less than `num`.
 -}
 lt : Int -> Filter Int
 lt num =
-    custom <| (>) num
+    custom <| lt_ num
+
+
+lt_ : Int -> Int -> Status
+lt_ num item =
+    case compare item num of
+        LT ->
+            Pass
+
+        _ ->
+            Fail
+
+
+{-| Test whether a value is less than or equal to `num`.
+-}
+lte : Int -> Filter Int
+lte num =
+    custom <| lte_ num
+
+
+lte_ : Int -> Int -> Status
+lte_ num item =
+    case compare item num of
+        GT ->
+            Fail
+
+        _ ->
+            Pass
 
 
 {-| Test whether a value is greater than `num`.
 -}
 gt : Int -> Filter Int
 gt num =
-    custom <| (<) num
+    custom <| gt_ num
+
+
+gt_ : Int -> Int -> Status
+gt_ num item =
+    case compare item num of
+        GT ->
+            Pass
+
+        _ ->
+            Fail
+
+
+{-| Test whether a value is greater than or equal to `num`.
+-}
+gte : Int -> Filter Int
+gte num =
+    custom <| gte_ num
+
+
+gte_ : Int -> Int -> Status
+gte_ num item =
+    case compare item num of
+        LT ->
+            Fail
+
+        _ ->
+            Pass
 
 
 {-| Test whether a value is equal to `item`.
 -}
 eq : a -> Filter a
 eq item =
-    Filter <| eq_ item
+    custom <| eq_ item
 
 
-eq_ : a -> a -> Bool
+eq_ : a -> a -> Status
 eq_ ref item =
-    ref == item
+    case compare ref item of
+        EQ ->
+            Pass
+
+        _ ->
+            Fail
 
 
 {-| Pass if both filters pass.
 -}
 and : Filter a -> Filter a -> Filter a
 and (Filter left) (Filter right) =
-    Filter <| and_ left right
+    custom <| and_ left right
 
 
-and_ : (a -> Bool) -> (a -> Bool) -> a -> Bool
+and_ : (a -> Status) -> (a -> Status) -> a -> Status
 and_ left right item =
-    left item && right item
+    case left item of
+        Pass ->
+            right item
+
+        _ ->
+            Fail
 
 
 {-| Pass if at least one filter passes.
 -}
 or : Filter a -> Filter a -> Filter a
 or (Filter left) (Filter right) =
-    Filter <| or_ left right
+    custom <| or_ left right
 
 
-or_ : (a -> Bool) -> (a -> Bool) -> a -> Bool
+or_ : (a -> Status) -> (a -> Status) -> a -> Status
 or_ left right item =
-    left item || right item
+    case left item of
+        Fail ->
+            right item
+
+        _ ->
+            Pass
 
 
 {-| Flip the outcome of a filter; if it fails it passes, and if it passes it fails.
 -}
 not : Filter a -> Filter a
 not (Filter filter) =
-    Filter <| not_ filter
+    custom <| not_ filter
 
 
-not_ : (a -> Bool) -> a -> Bool
+not_ : (a -> Status) -> a -> Status
 not_ filter item =
-    Basics.not <| filter item
+    case filter item of
+        Pass ->
+            Fail
+
+        Fail ->
+            Pass
 
 
 {-| Sometimes the building blocks in this library aren't enough!
 -}
-custom : (a -> Bool) -> Filter a
+custom : (a -> Status) -> Filter a
 custom =
     Filter
 
@@ -93,7 +174,7 @@ custom =
         by .height <| gt 6
 
     test isTall bob
-    -- False
+    -- Fail
 
 -}
 by : (a -> b) -> Filter b -> Filter a
@@ -101,7 +182,7 @@ by derived (Filter filter) =
     Filter <| by_ derived filter
 
 
-by_ : (a -> b) -> (b -> Bool) -> a -> Bool
+by_ : (a -> b) -> (b -> Status) -> a -> Status
 by_ derived filter item =
     filter <| derived item
 
@@ -110,12 +191,22 @@ by_ derived filter item =
 -}
 list : Filter a -> List a -> List a
 list filter =
-    List.filter (test filter)
+    List.foldr (foldStep filter) []
+
+
+foldStep : Filter a -> a -> List a -> List a
+foldStep filter element rest =
+    case test filter element of
+        Pass ->
+            element :: rest
+
+        Fail ->
+            rest
 
 
 {-| Run an item through a given filter.
 -}
-test : Filter a -> a -> Bool
+test : Filter a -> a -> Status
 test (Filter filter) item =
     filter item
 
@@ -127,21 +218,21 @@ pass =
     Filter pass_
 
 
-pass_ : a -> Bool
+pass_ : a -> Status
 pass_ _ =
-    True
+    Pass
 
 
 {-| A filter that always fails.
 -}
 fail : Filter a
 fail =
-    Filter fail_
+    custom fail_
 
 
-fail_ : a -> Bool
+fail_ : a -> Status
 fail_ _ =
-    False
+    Fail
 
 
 {-| Pass if all filters pass.
@@ -162,4 +253,4 @@ any filters =
 -}
 array : Filter a -> Array a -> Array a
 array filter =
-    Array.filter (test filter)
+    Array.fromList << Array.foldr (foldStep filter) []
