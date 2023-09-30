@@ -1,8 +1,8 @@
-module Filter exposing (Filter, Status(..), all, and, any, array, by, custom, eq, fail, gt, list, lt, not, or, pass, test, gte, lte)
+module Filter exposing (Filter, Status(..), all, and, any, array, by, custom, eq, fail, gt, list, lt, not, or, pass, test, gte, lte, neq)
 
 {-| Useful ways to combine filters (also known as predicates)!
 
-@docs Filter, Status, all, and, any, array, by, custom, eq, fail, gt, list, lt, not, or, pass, test, gte, lte
+@docs Filter, Status, all, and, any, array, by, custom, eq, fail, gt, list, lt, not, or, pass, test, gte, lte, neq
 
 -}
 
@@ -90,21 +90,36 @@ gte_ num item =
             Pass
 
 
-{-| Test whether a value is equal to `item`.
+{-| Test whether a value is equal to `ref`.
 -}
 eq : a -> Filter a
-eq item =
-    custom <| eq_ item
+eq ref =
+    custom <| eq_ ref
 
 
 eq_ : a -> a -> Status
 eq_ ref item =
-    case compare ref item of
-        EQ ->
-            Pass
+    if ref == item then
+        Pass
 
-        _ ->
-            Fail
+    else
+        Fail
+
+
+{-| Test whether a value is not equal to `ref`.
+-}
+neq : a -> Filter a
+neq ref =
+    custom <| neq_ ref
+
+
+neq_ : a -> a -> Status
+neq_ ref item =
+    if ref /= item then
+        Pass
+
+    else
+        Fail
 
 
 {-| Pass if both filters pass.
