@@ -202,7 +202,7 @@ by_ derived filter item =
     filter <| derived item
 
 
-{-| Keep items that do pass the filter.
+{-| Keep items that pass the filter.
 -}
 list : Filter a -> List a -> List a
 list filter =

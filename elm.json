@@ -3,7 +3,7 @@
     "name": "red-g/filter",
     "summary": "Functions for manipulating filters",
     "license": "MIT",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "exposed-modules": [
         "Filter"
     ],

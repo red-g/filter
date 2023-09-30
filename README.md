@@ -1,5 +1,5 @@
 # filter
-Elm library for manipulating filters.
+[Elm library](https://package.elm-lang.org/packages/red-g/filter/latest/Filter) for manipulating filters.
 
 # examples
 Implementing a greater-than-or-equals `Filter` through composition:
@@ -9,13 +9,13 @@ gte num =
   Filter.or Filter.eq (Filter.gt num)
 
 Filter.test (gte 3) 3
--- True
+-- Pass
 
 Filter.test (gte 4) 5
--- True
+-- Pass
 
 Filter.test (gte 1) -1
--- False
+-- Fail
 ```
 
 Ensuring that one of a list of conditions is passed:
